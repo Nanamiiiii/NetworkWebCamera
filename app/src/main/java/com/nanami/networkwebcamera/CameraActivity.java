@@ -8,12 +8,14 @@ import androidx.core.content.ContextCompat;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
+import android.media.ImageReader;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
@@ -31,6 +33,9 @@ public class CameraActivity extends AppCompatActivity{
     private static String TAG = "Camera2Test";
     private int REQUEST_CODE_PERMISSIONS = 10;
     private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA };
+    private static int IMAGE_READER_MAX_IMAGES = 4;
+
+    private ImageReader mImageReader;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -138,6 +143,10 @@ public class CameraActivity extends AppCompatActivity{
             }
 
         }, null);
+    }
+
+    private void setupImageReader(){
+        mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
     }
 
     private boolean allPermissionGranted(){
