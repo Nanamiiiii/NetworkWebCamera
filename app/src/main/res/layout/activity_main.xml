@@ -9,18 +9,138 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center|center_horizontal"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <Button
-            android:id="@+id/button2"
+        <TextView
+            android:id="@+id/textView2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="callCameraActivity"
-            android:text="Button" />
+            android:text="Host IP Address" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/ip_addr_1"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="192" />
+
+            <TextView
+                android:id="@+id/dot1"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="."
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                tools:text="." />
+
+            <EditText
+                android:id="@+id/ip_addr2"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="168" />
+
+            <TextView
+                android:id="@+id/dot2"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="."
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                tools:text="." />
+
+            <EditText
+                android:id="@+id/ip_addr3"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="1" />
+
+            <TextView
+                android:id="@+id/dot3"
+                android:layout_width="20dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:text="."
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                tools:text="." />
+
+            <EditText
+                android:id="@+id/ip_addr4"
+                android:layout_width="40dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="1" />
+
+            <TextView
+                android:id="@+id/dot4"
+                android:layout_width="10dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="."
+                android:textAlignment="center"
+                android:textAllCaps="false"
+                android:textSize="20sp"
+                tools:text=":" />
+
+            <EditText
+                android:id="@+id/portNo"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:inputType="textPersonName"
+                android:text="8080" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="callCameraActivity"
+                android:text="Connect" />
+
+            <Space
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+        </LinearLayout>
 
     </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
