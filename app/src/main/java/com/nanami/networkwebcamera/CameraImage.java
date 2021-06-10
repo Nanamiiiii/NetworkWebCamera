@@ -7,8 +7,9 @@ public class CameraImage {
     private byte[] imageByteArray;
     private final Lock lock = new ReentrantLock();
 
+    // Constructor
     public CameraImage() {
-
+        // NOP
     }
 
     public void setByteArray(byte[] image) {

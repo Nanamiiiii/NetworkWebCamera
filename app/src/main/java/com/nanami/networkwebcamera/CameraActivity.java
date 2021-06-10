@@ -80,13 +80,15 @@ public class CameraActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
         setContentView(R.layout.activity_camera);
+        mCameraImage = new CameraImage();
         Intent intent = getIntent();
         hostIpAddr = intent.getStringExtra("HOST_IP");
         hostPort = intent.getIntExtra("HOST_PORT", 8080);
-        mServer = new CameraServer(hostIpAddr, hostPort);
+        mServer = new CameraServer(hostIpAddr, hostPort, mCameraImage);
         textureView = findViewById(R.id.textureView);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         setupImageReader();
+        mServer.start();
     }
 
     @Override
