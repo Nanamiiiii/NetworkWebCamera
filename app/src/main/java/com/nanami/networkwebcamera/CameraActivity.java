@@ -34,14 +34,14 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
-public class CameraActivity extends AppCompatActivity{
+public class CameraActivity extends AppCompatActivity {
     private TextureView textureView = null;
     private CameraDevice cameraDevice = null;
     private CameraManager cameraManager = null;
     private CameraCaptureSession captureSession = null;
     private static String TAG = "CameraActivity";
     private int REQUEST_CODE_PERMISSIONS = 10;
-    private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA };
+    private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA , Manifest.permission.INTERNET};
     private static int IMAGE_READER_MAX_IMAGES = 4;
 
     private ImageReader mImageReader;
@@ -88,7 +88,8 @@ public class CameraActivity extends AppCompatActivity{
         textureView = findViewById(R.id.textureView);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         setupImageReader();
-        mServer.start();
+        Thread serverStart = new Thread(() -> mServer.start());
+        serverStart.start();
     }
 
     @Override
@@ -209,7 +210,7 @@ public class CameraActivity extends AppCompatActivity{
     }
 
     private void setupImageReader(){
-        mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
+        mImageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
         mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {

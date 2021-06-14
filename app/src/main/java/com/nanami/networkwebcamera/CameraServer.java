@@ -1,10 +1,12 @@
 package com.nanami.networkwebcamera;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 
 
 public class CameraServer {
@@ -17,6 +19,7 @@ public class CameraServer {
     private Thread sendImageThread;
     private CameraImage mCameraImage;
     private boolean sendingStatus = false;
+    private final static String CRLF = "\r\n";
 
     // Constructor
     public CameraServer(String address, int port, CameraImage image){
@@ -32,6 +35,7 @@ public class CameraServer {
         try {
             mSocket = new Socket(hostAddress, port);
         } catch (IOException e) {
+            Log.e(TAG, e.toString());
             return false;
         }
         return true;
@@ -49,24 +53,27 @@ public class CameraServer {
 
     private void startLoop() {
         if (!connectionEstablished) {
-             if (!establishConnection()) return;
+             if (!establishConnection()) {
+                 Log.d(TAG, "Connection cannot be established.");
+                 return;
+             }
         }
-        BufferedOutputStream bos = getBufferdOS(mSocket);
+        BufferedOutputStream bos = getBufferedOS(mSocket);
         // TODO: Image sending Loop
-        sendImageThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(sendingStatus) {
-                    imageByteArray = mCameraImage.getByteArray();
-                    sendByte(bos, imageByteArray);
-                    sleep(10);
-                }
-                closeBufferedOS(bos);
+        sendImageThread = new Thread(() -> {
+            while(sendingStatus) {
+                imageByteArray = mCameraImage.getByteArray();
+                if(imageByteArray == null) continue;
+                sendByte(bos, imageByteArray);
+                sleep(1000);
             }
+            closeBufferedOS(bos);
         });
 
-        sendImageThread.run();
+        sendImageThread.start();
     }
+
+    // Methods for catching some exceptions
 
     private void stopLoop() {
         try {
@@ -79,7 +86,7 @@ public class CameraServer {
         }
     }
 
-    private BufferedOutputStream getBufferdOS(Socket soc) {
+    private BufferedOutputStream getBufferedOS(Socket soc) {
         BufferedOutputStream bos = null;
         try {
             bos = new BufferedOutputStream(soc.getOutputStream());
@@ -98,8 +105,14 @@ public class CameraServer {
     }
 
     private void sendByte(BufferedOutputStream bos, byte[] bytes){
+        byte[] dataSize = ByteBuffer.allocate(4).putInt(bytes.length).array();
         try {
+            // First 5 bytes -> 0xff + <data size (4 bytes)>
+            bos.write(0xff);
+            bos.write(dataSize, 0, 4);
             bos.write(bytes, 0, bytes.length);
+            bos.flush();
+            Log.d(TAG, "Send " + bytes.length + " bytes");
         }catch (IOException e){
             Log.e(TAG, e.toString());
         }
