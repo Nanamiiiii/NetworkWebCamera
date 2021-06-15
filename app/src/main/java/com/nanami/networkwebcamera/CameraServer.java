@@ -65,7 +65,7 @@ public class CameraServer {
                 imageByteArray = mCameraImage.getByteArray();
                 if(imageByteArray == null) continue;
                 sendByte(bos, imageByteArray);
-                sleep(1000);
+                sleep(10);
             }
             closeBufferedOS(bos);
         });

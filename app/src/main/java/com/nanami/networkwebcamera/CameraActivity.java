@@ -183,7 +183,7 @@ public class CameraActivity extends AppCompatActivity {
     private void createCameraPreviewSession() throws CameraAccessException{
         if (cameraDevice == null) return;
         SurfaceTexture texture = textureView.getSurfaceTexture();
-        texture.setDefaultBufferSize(1920, 1080);
+        texture.setDefaultBufferSize(640, 480);
         Surface surface = new Surface(texture);
 
         CaptureRequest.Builder previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -210,7 +210,7 @@ public class CameraActivity extends AppCompatActivity {
     }
 
     private void setupImageReader(){
-        mImageReader = ImageReader.newInstance(640, 480, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
+        mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
         mImageReader.setOnImageAvailableListener(new ImageReader.OnImageAvailableListener() {
             @Override
             public void onImageAvailable(ImageReader reader) {
