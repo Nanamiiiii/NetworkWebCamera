@@ -32,7 +32,6 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import java.util.List;
 
 public class CameraActivity extends AppCompatActivity {
     private TextureView textureView = null;
@@ -50,7 +49,7 @@ public class CameraActivity extends AppCompatActivity {
     private String hostIpAddr;
     private int hostPort;
 
-    private CameraServer mServer;
+    private CameraClient mServer;
     private CameraImage mCameraImage;
 
     public final static int FRAME_WIDTH = 640;
@@ -84,7 +83,7 @@ public class CameraActivity extends AppCompatActivity {
         Intent intent = getIntent();
         hostIpAddr = intent.getStringExtra("HOST_IP");
         hostPort = intent.getIntExtra("HOST_PORT", 8080);
-        mServer = new CameraServer(hostIpAddr, hostPort, mCameraImage);
+        mServer = new CameraClient(hostIpAddr, hostPort, mCameraImage);
         textureView = findViewById(R.id.textureView);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         setupImageReader();

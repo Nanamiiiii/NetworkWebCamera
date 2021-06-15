@@ -9,7 +9,7 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 
-public class CameraServer {
+public class CameraClient {
     private final static String TAG = "CameraServer";
     private String hostAddress;
     private int port;
@@ -22,7 +22,7 @@ public class CameraServer {
     private final static String CRLF = "\r\n";
 
     // Constructor
-    public CameraServer(String address, int port, CameraImage image){
+    public CameraClient(String address, int port, CameraImage image){
         hostAddress = address;
         this.port = port;
         mCameraImage = image;
@@ -65,7 +65,7 @@ public class CameraServer {
                 imageByteArray = mCameraImage.getByteArray();
                 if(imageByteArray == null) continue;
                 sendByte(bos, imageByteArray);
-                sleep(10);
+                sleep(100/6);
             }
             closeBufferedOS(bos);
         });
