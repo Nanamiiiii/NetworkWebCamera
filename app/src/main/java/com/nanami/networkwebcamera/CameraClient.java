@@ -1,7 +1,6 @@
 package com.nanami.networkwebcamera;
 
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -19,13 +18,26 @@ public class CameraClient {
     private Thread sendImageThread;
     private CameraImage mCameraImage;
     private boolean sendingStatus = false;
-    private final static String CRLF = "\r\n";
+
+    /* Public Methods */
 
     // Constructor
     public CameraClient(String address, int port, CameraImage image){
         hostAddress = address;
         this.port = port;
         mCameraImage = image;
+    }
+
+    // Start Sending
+    public void start() {
+        sendingStatus = true;
+        startLoop();
+    }
+
+    // Stop Sending
+    public void stop() {
+        sendingStatus = false;
+        stopLoop();
     }
 
     // establish connection to host computer
@@ -41,15 +53,7 @@ public class CameraClient {
         return true;
     }
 
-    public void start() {
-        sendingStatus = true;
-        startLoop();
-    }
-
-    public void stop() {
-        sendingStatus = false;
-        stopLoop();
-    }
+    /* Private Methods */
 
     private void startLoop() {
         if (!connectionEstablished) {
@@ -59,7 +63,7 @@ public class CameraClient {
              }
         }
         BufferedOutputStream bos = getBufferedOS(mSocket);
-        // TODO: Image sending Loop
+        // Image sending Loop
         sendImageThread = new Thread(() -> {
             while(sendingStatus) {
                 imageByteArray = mCameraImage.getByteArray();

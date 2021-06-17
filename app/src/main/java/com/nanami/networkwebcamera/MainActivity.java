@@ -29,9 +29,13 @@ public class MainActivity extends AppCompatActivity {
     public void callCameraActivity(View view){
         String hostIpAddr = ipFirst3.getText().toString() + "." + ipSecond3.getText().toString() + "." + ipThird3.getText().toString() + "." + ipLast3.getText().toString();
         int hostPort = Integer.parseInt(portNo.getText().toString());
+
+        // To call CameraActivity
         Intent intent = new Intent(this, CameraActivity.class);
+        // Give some parameter
         intent.putExtra("HOST_IP", hostIpAddr);
         intent.putExtra("HOST_PORT", hostPort);
+        // Call
         startActivity(intent);
     }
 }
