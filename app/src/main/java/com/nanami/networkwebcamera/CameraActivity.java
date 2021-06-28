@@ -10,6 +10,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Observable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -53,6 +54,8 @@ public class CameraActivity extends AppCompatActivity {
     private CameraClient mClient;
     private CameraImage mCameraImage;
 
+    private final Handler handler = new Handler();
+
     // Image Size
     public final static int FRAME_WIDTH = 640;
     public final static int FRAME_HEIGHT = 480;
@@ -66,7 +69,6 @@ public class CameraActivity extends AppCompatActivity {
     private final PreviewCallback mPreviewCallback = new PreviewCallback() {
         @Override
         public void onPreview(byte[] bytes) {
-            // TODO: set bytes to streaming method
             mCameraImage.setByteArray(bytes);
         }
     };
@@ -87,14 +89,16 @@ public class CameraActivity extends AppCompatActivity {
         hostPort = intent.getIntExtra("HOST_PORT", 8080);
 
         // Create Client Instance
-        mClient = new CameraClient(hostIpAddr, hostPort, mCameraImage);
+        mClient = new CameraClient(hostIpAddr, hostPort, mCameraImage, this);
         textureView = findViewById(R.id.textureView);
         cameraManager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         setupImageReader();
 
         // To avoid Exception
         // Network Component can't be operated from the thread operating UI component.
-        Thread clientStart = new Thread(() -> mClient.start());
+        Thread clientStart = new Thread(() -> {
+            mClient.start();
+        });
         clientStart.start();
     }
 
@@ -181,6 +185,24 @@ public class CameraActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("Cancel", null)
                 .show();
+    }
+
+    public void unableConnect(){
+        handler.post(() -> {
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("Failed to connect.")
+                    .setPositiveButton("OK", (dialog, which) -> {
+                        if(captureSession != null) {
+                            captureSession.close();
+                        }
+                        if(cameraDevice != null) {
+                            cameraDevice.close();
+                        }
+                        finish();
+                    })
+                    .show();
+        });
     }
 
     // Setup Camera Session

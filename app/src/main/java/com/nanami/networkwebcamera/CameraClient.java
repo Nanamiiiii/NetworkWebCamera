@@ -5,11 +5,12 @@ import android.util.Log;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 
 public class CameraClient {
-    private final static String TAG = "CameraServer";
+    private final static String TAG = "CameraClient";
     private String hostAddress;
     private int port;
     private Socket mSocket;
@@ -18,14 +19,16 @@ public class CameraClient {
     private Thread sendImageThread;
     private CameraImage mCameraImage;
     private boolean sendingStatus = false;
+    private CameraActivity mCameraActivity;
 
     /* Public Methods */
 
     // Constructor
-    public CameraClient(String address, int port, CameraImage image){
+    public CameraClient(String address, int port, CameraImage image, CameraActivity camActivity){
         hostAddress = address;
         this.port = port;
         mCameraImage = image;
+        mCameraActivity = camActivity;
     }
 
     // Start Sending
@@ -41,9 +44,7 @@ public class CameraClient {
     }
 
     // establish connection to host computer
-    // if connection already established, this returns "true"
     private boolean establishConnection() {
-        if (connectionEstablished) return true;
         try {
             mSocket = new Socket(hostAddress, port);
         } catch (IOException e) {
@@ -58,7 +59,8 @@ public class CameraClient {
     private void startLoop() {
         if (!connectionEstablished) {
              if (!establishConnection()) {
-                 Log.d(TAG, "Connection cannot be established.");
+                 Log.e(TAG, "Connection cannot be established.");
+                 mCameraActivity.unableConnect();
                  return;
              }
         }
@@ -72,6 +74,8 @@ public class CameraClient {
                 sleep(100/6);
             }
             closeBufferedOS(bos);
+            closeSocketOutput();
+            closeSocket();
         });
 
         sendImageThread.start();
@@ -103,6 +107,23 @@ public class CameraClient {
     private void closeBufferedOS(BufferedOutputStream bos) {
         try {
             bos.close();
+        }catch (IOException e){
+            Log.e(TAG, e.toString());
+        }
+    }
+
+    private void closeSocketOutput(){
+        try {
+            mSocket.shutdownOutput();
+        }catch (IOException e){
+            Log.e(TAG, e.toString());
+        }
+    }
+
+    private void closeSocket() {
+        try {
+            if(mSocket != null) mSocket.close();
+            mSocket = null;
         }catch (IOException e){
             Log.e(TAG, e.toString());
         }
