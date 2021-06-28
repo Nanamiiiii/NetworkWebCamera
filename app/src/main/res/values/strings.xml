@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">NetworkWebCamera</string>
+    <string name="exit">EXIT</string>
 </resources>

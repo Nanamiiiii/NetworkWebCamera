@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -15,12 +16,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
+import android.graphics.PointF;
+import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Bundle;
@@ -28,6 +33,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -35,14 +41,14 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class CameraActivity extends AppCompatActivity {
+public class CameraActivity extends Activity {
     private TextureView textureView = null;
     private CameraDevice cameraDevice = null;
     private CameraManager cameraManager = null;
     private CameraCaptureSession captureSession = null;
     private static String TAG = "CameraActivity";
     private int REQUEST_CODE_PERMISSIONS = 10;
-    private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA , Manifest.permission.INTERNET};
+    private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA , Manifest.permission.INTERNET };
     private static int IMAGE_READER_MAX_IMAGES = 4;
 
     private ImageReader mImageReader;
@@ -53,12 +59,14 @@ public class CameraActivity extends AppCompatActivity {
 
     private CameraClient mClient;
     private CameraImage mCameraImage;
+    private CameraCharacteristics mCameraCharacteristics = null;
+    private StreamConfigurationMap mStreamConfigurationMap = null;
 
     private final Handler handler = new Handler();
 
     // Image Size
-    public final static int FRAME_WIDTH = 640;
-    public final static int FRAME_HEIGHT = 480;
+    public final static int FRAME_WIDTH = 1280;
+    public final static int FRAME_HEIGHT = 720;
     public final static int FRAME_ROTATION = 0;
 
     // Callback for ImagePreview
@@ -78,7 +86,7 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // Prohibit turning Off the screen automatically
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.activity_camera);
         mCameraImage = new CameraImage();
@@ -187,6 +195,26 @@ public class CameraActivity extends AppCompatActivity {
                 .show();
     }
 
+    public void onClosePressed(View v) {
+        new AlertDialog.Builder(this)
+                .setTitle("Warning")
+                .setMessage("Are you sure disconnecting server?")
+                .setPositiveButton("OK", (dialog, which) -> {
+                    if(mClient != null) {
+                        mClient.stop();
+                    }
+                    if(captureSession != null) {
+                        captureSession.close();
+                    }
+                    if(cameraDevice != null) {
+                        cameraDevice.close();
+                    }
+                    finish();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
     public void unableConnect(){
         handler.post(() -> {
             new AlertDialog.Builder(this)
@@ -241,8 +269,9 @@ public class CameraActivity extends AppCompatActivity {
     // Setup Preview Session
     private void createCameraPreviewSession() throws CameraAccessException{
         if (cameraDevice == null) return;
+        configureTransformKeepAspect(textureView, textureView.getWidth(), textureView.getHeight());
         SurfaceTexture texture = textureView.getSurfaceTexture();
-        texture.setDefaultBufferSize(640, 480);
+        texture.setDefaultBufferSize(FRAME_WIDTH, FRAME_HEIGHT);
         Surface surface = new Surface(texture);
 
         CaptureRequest.Builder previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -335,6 +364,58 @@ public class CameraActivity extends AppCompatActivity {
         int height = source.getHeight();
 
         return Bitmap.createBitmap(source, 0, 0, width, height, matrix, true);
+    }
+
+    private void configureTransform(TextureView textureView, int previewWidth, int previewHeight) {
+        int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
+        Matrix matrix = new Matrix();
+        RectF viewRect = new RectF(0, 0, textureView.getWidth(), textureView.getHeight());
+        RectF bufferRect = new RectF(0, 0, previewHeight, previewWidth);
+        PointF center = new PointF(viewRect.centerX(), viewRect.centerY());
+        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
+            bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
+            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
+            float scale = Math.max(
+                    (float) textureView.getHeight() / previewHeight,
+                    (float) textureView.getWidth() / previewHeight);
+            matrix.postScale(scale, scale, center.x, center.y);
+            matrix.postRotate(90 * (rotation - 2), center.x, center.y);
+        } else if (Surface.ROTATION_180 == rotation) {
+            matrix.postRotate(180, center.x, center.y);
+        }
+        textureView.setTransform(matrix);
+    }
+
+    private void configureTransformKeepAspect(TextureView textureView, int previewWidth, int previewHeight) {
+        int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
+        Matrix matrix = new Matrix();
+        RectF viewRect = new RectF(0, 0, textureView.getWidth(), textureView.getHeight());
+        RectF bufferRect = new RectF(0, 0, previewHeight, previewWidth);
+        PointF center = new PointF(viewRect.centerX(), viewRect.centerY());
+
+        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
+            bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
+            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
+
+            float scale = Math.min(
+                    (float) textureView.getWidth() / previewWidth,
+                    (float) textureView.getHeight() / previewHeight);
+            matrix.postScale(scale, scale, center.x, center.y);
+
+            matrix.postRotate(90 * (rotation - 2), center.x, center.y);
+        } else {
+            bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
+            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
+
+            float scale = Math.min(
+                    (float) textureView.getWidth() / previewHeight,
+                    (float) textureView.getHeight() / previewWidth);
+            matrix.postScale(scale, scale, center.x, center.y);
+
+            matrix.postRotate(90 * rotation, center.x, center.y);
+        }
+
+        textureView.setTransform(matrix);
     }
 
 }
