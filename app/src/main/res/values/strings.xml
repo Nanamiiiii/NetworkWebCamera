@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">NetworkWebCamera</string>
     <string name="exit">EXIT</string>
+    <string name="device_information">Device Information</string>
+    <string name="host_ip_address">Host IP Address</string>
+    <string name="connect">Connect</string>
+    <string name="ssid">SSID</string>
+    <string name="noname">NONAME</string>
+    <string name="ip_address">IP Address</string>
+    <string name="undefined">UNDEFINED</string>
+    <string name="connectiontype">ConnectionType</string>
 </resources>
