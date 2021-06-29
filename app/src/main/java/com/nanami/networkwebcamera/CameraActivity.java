@@ -88,6 +88,7 @@ public class CameraActivity extends Activity {
         // Prohibit turning Off the screen automatically
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        // generate view
         setContentView(R.layout.activity_camera);
         mCameraImage = new CameraImage();
 
@@ -364,26 +365,6 @@ public class CameraActivity extends Activity {
         int height = source.getHeight();
 
         return Bitmap.createBitmap(source, 0, 0, width, height, matrix, true);
-    }
-
-    private void configureTransform(TextureView textureView, int previewWidth, int previewHeight) {
-        int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
-        Matrix matrix = new Matrix();
-        RectF viewRect = new RectF(0, 0, textureView.getWidth(), textureView.getHeight());
-        RectF bufferRect = new RectF(0, 0, previewHeight, previewWidth);
-        PointF center = new PointF(viewRect.centerX(), viewRect.centerY());
-        if (Surface.ROTATION_90 == rotation || Surface.ROTATION_270 == rotation) {
-            bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
-            matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
-            float scale = Math.max(
-                    (float) textureView.getHeight() / previewHeight,
-                    (float) textureView.getWidth() / previewHeight);
-            matrix.postScale(scale, scale, center.x, center.y);
-            matrix.postRotate(90 * (rotation - 2), center.x, center.y);
-        } else if (Surface.ROTATION_180 == rotation) {
-            matrix.postRotate(180, center.x, center.y);
-        }
-        textureView.setTransform(matrix);
     }
 
     private void configureTransformKeepAspect(TextureView textureView, int previewWidth, int previewHeight) {

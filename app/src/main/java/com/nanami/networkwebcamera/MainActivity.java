@@ -2,12 +2,20 @@ package com.nanami.networkwebcamera;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static String TAG = "MainActivity";
 
     EditText ipFirst3;
     EditText ipSecond3;
@@ -24,6 +32,31 @@ public class MainActivity extends AppCompatActivity {
         ipThird3 = findViewById(R.id.ip_addr3);
         ipLast3 = findViewById(R.id.ip_addr4);
         portNo = findViewById(R.id.portNo);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Check Network Connection
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        boolean wifi_connected = false;
+        for(Network network : connManager.getAllNetworks()){
+            NetworkInfo networkInfo = connManager.getNetworkInfo(network);
+            if(networkInfo.getType() == ConnectivityManager.TYPE_WIFI){
+                wifi_connected |= networkInfo.isConnected();
+                Log.d(TAG, "Connected to WiFi.");
+            }
+        }
+        if(!wifi_connected) {
+            Log.d(TAG, "WiFi connection not found.");
+            new AlertDialog.Builder(this)
+                    .setTitle("Error")
+                    .setMessage("This app can be run under the Wi-Fi local network.")
+                    .setPositiveButton("EXIT", (dialog, which) -> {
+                        finish();
+                    }).show();
+        }
     }
 
     public void callCameraActivity(View view){
