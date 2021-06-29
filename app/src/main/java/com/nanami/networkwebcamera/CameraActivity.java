@@ -1,7 +1,6 @@
 package com.nanami.networkwebcamera;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -11,7 +10,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Observable;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageFormat;
@@ -37,6 +35,8 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.google.android.material.progressindicator.LinearProgressIndicator;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -61,6 +61,8 @@ public class CameraActivity extends Activity {
     private CameraImage mCameraImage;
     private CameraCharacteristics mCameraCharacteristics = null;
     private StreamConfigurationMap mStreamConfigurationMap = null;
+
+    private LinearProgressIndicator connectionProg;
 
     private final Handler handler = new Handler();
 
@@ -90,6 +92,7 @@ public class CameraActivity extends Activity {
 
         // generate view
         setContentView(R.layout.activity_camera);
+        connectionProg = findViewById(R.id.connectionProg);
         mCameraImage = new CameraImage();
 
         // Get Connection Info from MainActivity
@@ -146,6 +149,34 @@ public class CameraActivity extends Activity {
             });
         }
 
+    }
+
+    // Fullscreen settings
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        if (hasFocus) {
+            hideSystemUI();
+        }
+    }
+
+    private void hideSystemUI() {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_IMMERSIVE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
+
+    private void showSystemUI() {
+        View decorView = getWindow().getDecorView();
+        decorView.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
     // Related Permission
@@ -231,6 +262,42 @@ public class CameraActivity extends Activity {
                         finish();
                     })
                     .show();
+        });
+    }
+
+    public void lostConnection(){
+        handler.post(() -> {
+           new AlertDialog.Builder(this)
+                   .setTitle("Error")
+                   .setMessage("Connection Lost")
+                   .setPositiveButton("EXIT", (dialog, which) -> {
+                       if(mClient != null){
+                           mClient.stop();
+                       }
+                       if(captureSession != null){
+                           captureSession.close();
+                       }
+                       if(cameraDevice != null){
+                           cameraDevice.close();
+                       }
+                       finish();
+                   })
+                   .show();
+        });
+    }
+
+    public void hideProgressBar() {
+        handler.post(() -> {
+            connectionProg.hide();
+        });
+    }
+
+    public void makeToastThroughHandler(String str){
+        handler.post(() -> {
+            Context context = getApplicationContext();
+            int dur = Toast.LENGTH_SHORT;
+            Toast toast = Toast.makeText(context, str, dur);
+            toast.show();
         });
     }
 
@@ -356,7 +423,7 @@ public class CameraActivity extends Activity {
         return bitmap;
     }
 
-    private Bitmap rotateBitmap(Bitmap source, int degrees  ) {
+    private Bitmap rotateBitmap(Bitmap source, int degrees) {
         if (degrees == 0) return source;
 
         Matrix matrix = new Matrix();
@@ -367,6 +434,7 @@ public class CameraActivity extends Activity {
         return Bitmap.createBitmap(source, 0, 0, width, height, matrix, true);
     }
 
+    // Resize TextureView
     private void configureTransformKeepAspect(TextureView textureView, int previewWidth, int previewHeight) {
         int rotation = this.getWindowManager().getDefaultDisplay().getRotation();
         Matrix matrix = new Matrix();
@@ -378,9 +446,7 @@ public class CameraActivity extends Activity {
             bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
             matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
 
-            float scale = Math.min(
-                    (float) textureView.getWidth() / previewWidth,
-                    (float) textureView.getHeight() / previewHeight);
+            float scale = Math.min((float) textureView.getWidth() / previewWidth, (float) textureView.getHeight() / previewHeight);
             matrix.postScale(scale, scale, center.x, center.y);
 
             matrix.postRotate(90 * (rotation - 2), center.x, center.y);
@@ -388,9 +454,7 @@ public class CameraActivity extends Activity {
             bufferRect.offset(center.x - bufferRect.centerX(), center.y - bufferRect.centerY());
             matrix.setRectToRect(viewRect, bufferRect, Matrix.ScaleToFit.FILL);
 
-            float scale = Math.min(
-                    (float) textureView.getWidth() / previewHeight,
-                    (float) textureView.getHeight() / previewWidth);
+            float scale = Math.min((float) textureView.getWidth() / previewHeight, (float) textureView.getHeight() / previewWidth);
             matrix.postScale(scale, scale, center.x, center.y);
 
             matrix.postRotate(90 * rotation, center.x, center.y);

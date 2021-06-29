@@ -5,7 +5,6 @@ import android.util.Log;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 
@@ -62,6 +61,10 @@ public class CameraClient {
                  Log.e(TAG, "Connection cannot be established.");
                  mCameraActivity.unableConnect();
                  return;
+             }else{
+                 connectionEstablished = true;
+                 mCameraActivity.hideProgressBar();
+                 mCameraActivity.makeToastThroughHandler("Connection Established.");
              }
         }
         BufferedOutputStream bos = getBufferedOS(mSocket);
@@ -70,7 +73,13 @@ public class CameraClient {
             while(sendingStatus) {
                 imageByteArray = mCameraImage.getByteArray();
                 if(imageByteArray == null) continue;
-                sendByte(bos, imageByteArray);
+                try {
+                    sendByte(bos, imageByteArray);
+                }catch(ByteSendingException bse){
+                    Log.e(TAG, bse.toString());
+                    mCameraActivity.lostConnection();
+                    break;
+                }
                 sleep(100/6);
             }
             closeBufferedOS(bos);
@@ -129,7 +138,7 @@ public class CameraClient {
         }
     }
 
-    private void sendByte(BufferedOutputStream bos, byte[] bytes){
+    private void sendByte(BufferedOutputStream bos, byte[] bytes) throws ByteSendingException{
         byte[] dataSize = ByteBuffer.allocate(4).putInt(bytes.length).array();
         try {
             // First 5 bytes -> 0xff + <data size (4 bytes)>
@@ -140,6 +149,7 @@ public class CameraClient {
             Log.d(TAG, "Send " + bytes.length + " bytes");
         }catch (IOException e){
             Log.e(TAG, e.toString());
+            throw new ByteSendingException("Connection Lost");
         }
     }
 
