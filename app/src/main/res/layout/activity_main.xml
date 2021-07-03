@@ -113,14 +113,14 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="192" />
+                android:text="@string/_192" />
 
             <TextView
                 android:id="@+id/dot1"
                 android:layout_width="20dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
-                android:text="."
+                android:text="@string/dot"
                 android:textAlignment="center"
                 android:textAllCaps="false"
                 tools:text="." />
@@ -131,14 +131,14 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="168" />
+                android:text="@string/_168" />
 
             <TextView
                 android:id="@+id/dot2"
                 android:layout_width="20dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
-                android:text="."
+                android:text="@string/dot"
                 android:textAlignment="center"
                 android:textAllCaps="false"
                 tools:text="." />
@@ -149,14 +149,14 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="1" />
+                android:text="@string/_1" />
 
             <TextView
                 android:id="@+id/dot3"
                 android:layout_width="20dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
-                android:text="."
+                android:text="@string/dot"
                 android:textAlignment="center"
                 android:textAllCaps="false"
                 tools:text="." />
@@ -167,14 +167,14 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="1" />
+                android:text="@string/_1" />
 
             <TextView
                 android:id="@+id/dot4"
-                android:layout_width="10dp"
+                android:layout_width="20dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="clip_horizontal|center"
-                android:text="."
+                android:text="@string/colon"
                 android:textAlignment="center"
                 android:textAllCaps="false"
                 android:textSize="20sp"
@@ -186,7 +186,39 @@
                 android:layout_height="wrap_content"
                 android:ems="10"
                 android:inputType="textPersonName"
-                android:text="8080" />
+                android:text="@string/_8080" />
+        </LinearLayout>
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+        <TextView
+            android:id="@+id/textView9"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/resolution" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Space
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <Spinner
+                android:id="@+id/res_select"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_weight="3" />
+
+            <Space
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
         </LinearLayout>
 
         <Space

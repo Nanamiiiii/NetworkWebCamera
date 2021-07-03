@@ -18,7 +18,10 @@ import android.os.Bundle;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,7 +29,7 @@ import java.util.ArrayList;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity{
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_CODE_PERMISSIONS = 1000;
@@ -49,6 +52,44 @@ public class MainActivity extends AppCompatActivity {
     private TextView connectionType;
     private TextView wifi_ssid;
 
+    private Spinner res_select;
+
+    private int pic_width = 1280;
+    private int pic_height = 720;
+
+    private AdapterView.OnItemSelectedListener res_select_listener = new AdapterView.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            switch((String) parent.getItemAtPosition(position)){
+                case "1080p":
+                    pic_width = 1920;
+                    pic_height = 1080;
+                    Log.d(TAG, "Resolution: 1080p");
+                    break;
+                case "720p":
+                    pic_width = 1280;
+                    pic_height = 720;
+                    Log.d(TAG, "Resolution: 720p");
+                    break;
+                case "360p":
+                    pic_width = 640;
+                    pic_height = 360;
+                    Log.d(TAG, "Resolution: 360p");
+                    break;
+                default :
+                    pic_width = 1280;
+                    pic_height = 720;
+                    Log.d(TAG, "Default Resolution: 720p");
+                    break;
+            }
+        }
+
+        @Override
+        public void onNothingSelected(AdapterView<?> parent) {
+            // NOP
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +102,11 @@ public class MainActivity extends AppCompatActivity {
         connectionType = findViewById(R.id.textView4);
         wifi_ssid = findViewById(R.id.textView6);
         deviceIP = findViewById(R.id.textView8);
+        res_select = findViewById(R.id.res_select);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.res_list, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        res_select.setAdapter(adapter);
+        res_select.setOnItemSelectedListener(res_select_listener);
     }
 
     @Override
@@ -106,6 +152,8 @@ public class MainActivity extends AppCompatActivity {
         // Give some parameter
         intent.putExtra("HOST_IP", hostIpAddr);
         intent.putExtra("HOST_PORT", hostPort);
+        intent.putExtra("PIC_WIDTH", pic_width);
+        intent.putExtra("PIC_HEIGHT", pic_height);
         // Call
         startActivity(intent);
     }

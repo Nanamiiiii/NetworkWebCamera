@@ -67,8 +67,8 @@ public class CameraActivity extends Activity {
     private final Handler handler = new Handler();
 
     // Image Size
-    public final static int FRAME_WIDTH = 1280;
-    public final static int FRAME_HEIGHT = 720;
+    public int FRAME_WIDTH = 1280;
+    public int FRAME_HEIGHT = 720;
     public final static int FRAME_ROTATION = 0;
 
     // Callback for ImagePreview
@@ -99,6 +99,8 @@ public class CameraActivity extends Activity {
         Intent intent = getIntent();
         hostIpAddr = intent.getStringExtra("HOST_IP");
         hostPort = intent.getIntExtra("HOST_PORT", 8080);
+        FRAME_WIDTH = intent.getIntExtra("PIC_WIDTH", 1280);
+        FRAME_HEIGHT = intent.getIntExtra("PIC_HEIGHT", 720);
 
         // Create Client Instance
         mClient = new CameraClient(hostIpAddr, hostPort, mCameraImage, this);
@@ -366,7 +368,7 @@ public class CameraActivity extends Activity {
     private void setupImageReader(){
         // Base Resolution and Format
         // JPEG is the lightest
-        mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
+        mImageReader = ImageReader.newInstance(FRAME_WIDTH, FRAME_HEIGHT, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
 
         // Image processing in Listener
         mImageReader.setOnImageAvailableListener(reader -> {
