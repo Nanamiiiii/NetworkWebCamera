@@ -19,7 +19,7 @@ PC側アプリケーションを起動しで待機状態にした後，PCのロ�
 
 ## 仕様概要
 Camera2 APIを使用して取得した背面カメラ画像をJPEGバイト列に変換  
-現状は解像度固定 取得解像度は1920x1080，送信解像度は1280x720  
+取得解像度・送信解像度は同一とし，1080p/720p/360p から選択できる  
 このバイト列の先頭に情報を付加し，Socketを介して送信  
 理論上の最大FPSは60 しかし変換処理等が重いためSDM845でも平均30~40程度と思われる
 
@@ -38,10 +38,10 @@ Android StudioとAPI Level 30のAndroid SDKが導入されてれば問題ない�
 Android Virtual Deviceでの動作も確認しているので，実機なしでもテスト可
 
 ## テスト端末
-- Xperia XZ3 (SO-01L)
+- Xperia XZ3 (SO-01L / Android 10)
     - 体感は普通に動作 スマホ側プレビューは軽いが，PC側は若干の遅延あり(最大1s程度)
 
-- Galaxy A7 (SM-A750C)
+- Galaxy A7 (SM-A750C / Android 9)
     - やや重い スマホの性能不足がボトルネックになりPC側映像にもカクつき・遅延が増加
 
 - Android Virtual Device (Pixel 3a)
