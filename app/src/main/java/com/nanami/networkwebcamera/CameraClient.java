@@ -6,6 +6,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class CameraClient {
@@ -80,7 +82,7 @@ public class CameraClient {
                     mCameraActivity.lostConnection();
                     break;
                 }
-                sleep(100/6);
+                sleep(1000/30);
             }
             closeBufferedOS(bos);
             closeSocketOutput();
@@ -147,7 +149,7 @@ public class CameraClient {
             bos.write(bytes, 0, bytes.length);
             bos.flush();
             Log.d(TAG, "Send " + bytes.length + " bytes");
-        }catch (IOException e){
+        }catch (IOException e) {
             Log.e(TAG, e.toString());
             throw new ByteSendingException("Connection Lost");
         }

@@ -38,6 +38,9 @@ import android.widget.Toast;
 import com.google.android.material.progressindicator.LinearProgressIndicator;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -49,7 +52,7 @@ public class CameraActivity extends Activity {
     private static String TAG = "CameraActivity";
     private int REQUEST_CODE_PERMISSIONS = 10;
     private String[] REQUIRED_PERMISSIONS = { Manifest.permission.CAMERA , Manifest.permission.INTERNET };
-    private static int IMAGE_READER_MAX_IMAGES = 4;
+    private static int IMAGE_READER_MAX_IMAGES = 48;
 
     private ImageReader mImageReader;
     private Handler mBackgroundHandler = new Handler();
@@ -59,8 +62,6 @@ public class CameraActivity extends Activity {
 
     private CameraClient mClient;
     private CameraImage mCameraImage;
-    private CameraCharacteristics mCameraCharacteristics = null;
-    private StreamConfigurationMap mStreamConfigurationMap = null;
 
     private LinearProgressIndicator connectionProg;
 
@@ -139,7 +140,9 @@ public class CameraActivity extends Activity {
                 }
 
                 @Override
-                public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {}
+                public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surface, int width, int height) {
+                    // NOP
+                }
 
                 @Override
                 public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surface) {
@@ -147,7 +150,9 @@ public class CameraActivity extends Activity {
                 }
 
                 @Override
-                public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {}
+                public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
+                    // NOP
+                }
             });
         }
 
@@ -368,22 +373,29 @@ public class CameraActivity extends Activity {
     private void setupImageReader(){
         // Base Resolution and Format
         // JPEG is the lightest
-        mImageReader = ImageReader.newInstance(FRAME_WIDTH, FRAME_HEIGHT, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
+        mImageReader = ImageReader.newInstance(1920, 1080, ImageFormat.JPEG, IMAGE_READER_MAX_IMAGES);
 
         // Image processing in Listener
         mImageReader.setOnImageAvailableListener(reader -> {
             Image image = reader.acquireLatestImage();
             if(image == null) return;
 
-            // Image is converted to bitmap once
-            Bitmap bitmap_orig = convImageJpegToBitmap(image);
-            Bitmap bitmap_resize = resizeBitmap(bitmap_orig, FRAME_WIDTH, FRAME_HEIGHT);
-            Bitmap bitmap_rotate = rotateBitmap(bitmap_resize, FRAME_ROTATION);
-            byte[] bytes = convBitmapToJpegByteArray(bitmap_rotate);
-            if(mPreviewCallback != null) {
-                mPreviewCallback.onPreview(bytes);
-            }
-            image.close();
+            Thread convertingThread = new Thread(() -> {
+                // Image is converted to bitmap once
+                Bitmap bitmap_orig = convImageJpegToBitmap(image);
+                Bitmap bitmap_resize = resizeBitmap(bitmap_orig, FRAME_WIDTH, FRAME_HEIGHT);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                bitmap_resize.compress(Bitmap.CompressFormat.JPEG, 60, out);
+                // Bitmap bitmap_rotate = rotateBitmap(bitmap_resize, FRAME_ROTATION);
+                byte[] bytes = out.toByteArray();
+                if(mPreviewCallback != null) {
+                    mPreviewCallback.onPreview(bytes);
+                }
+                image.close();
+                sleep(5);
+            });
+
+            convertingThread.start();
         }, mBackgroundHandler);
     }
 
@@ -465,4 +477,11 @@ public class CameraActivity extends Activity {
         textureView.setTransform(matrix);
     }
 
+    private void sleep(int ms){
+        try {
+            Thread.sleep(ms);
+        }catch (InterruptedException e){
+            Log.e(TAG, e.toString());
+        }
+    }
 }

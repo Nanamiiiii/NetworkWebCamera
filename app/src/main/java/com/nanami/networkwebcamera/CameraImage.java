@@ -2,31 +2,34 @@ package com.nanami.networkwebcamera;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class CameraImage {
     private byte[] imageByteArray;
-    private final Lock lock = new ReentrantLock();
+    private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+    private final Lock writeLock = rwl.writeLock();
+    private final Lock readLock = rwl.readLock();
 
     // Constructor
     public CameraImage() {
         // NOP
     }
 
-    public void setByteArray(byte[] image) {
-        lock.lock();
+    public synchronized void setByteArray(byte[] image) {
+        writeLock.lock();
         try {
             imageByteArray = image;
         } finally {
-            lock.unlock();
+            writeLock.unlock();
         }
     }
 
-    public byte[] getByteArray() {
-        lock.lock();
+    public synchronized byte[] getByteArray() {
+        readLock.lock();
         try {
             return imageByteArray;
         } finally {
-            lock.unlock();
+            readLock.unlock();
         }
     }
 
