@@ -33,6 +33,7 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.material.progressindicator.LinearProgressIndicator;
@@ -64,6 +65,7 @@ public class CameraActivity extends Activity {
     private CameraImage mCameraImage;
 
     private LinearProgressIndicator connectionProg;
+    private Button exitButton;
 
     private final Handler handler = new Handler();
 
@@ -95,6 +97,16 @@ public class CameraActivity extends Activity {
         setContentView(R.layout.activity_camera);
         connectionProg = findViewById(R.id.connectionProg);
         mCameraImage = new CameraImage();
+
+        // Set Button Listener
+        exitButton = findViewById(R.id.closeButton);
+        exitButton.setOnClickListener(v -> {
+            exitButton.setEnabled(false);
+            new Handler().postDelayed(() -> {
+                exitButton.setEnabled(true);
+            }, 1000L);
+            onClosePressed(v);
+        });
 
         // Get Connection Info from MainActivity
         Intent intent = getIntent();
@@ -382,7 +394,7 @@ public class CameraActivity extends Activity {
 
             Thread convertingThread = new Thread(() -> {
                 // Image is converted to bitmap once
-                Bitmap bitmap_orig = convImageJpegToBitmap(image);
+                Bitmap bitmap_orig = convertJpeg2Bitmap(image);
                 Bitmap bitmap_resize = resizeBitmap(bitmap_orig, FRAME_WIDTH, FRAME_HEIGHT);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 bitmap_resize.compress(Bitmap.CompressFormat.JPEG, 60, out);
@@ -399,7 +411,7 @@ public class CameraActivity extends Activity {
         }, mBackgroundHandler);
     }
 
-    private Bitmap convImageJpegToBitmap(Image imageJpeg) {
+    private Bitmap convertJpeg2Bitmap(Image imageJpeg) {
         // ImageJPEG to JPEGByteArray
         ByteBuffer buffer = imageJpeg.getPlanes()[0].getBuffer();
         int size = buffer.capacity();
@@ -412,7 +424,7 @@ public class CameraActivity extends Activity {
         return bitmap;
     }
 
-    private byte[] convBitmapToJpegByteArray(Bitmap bitmap) {
+    private byte[] convertBitmap2Jpeg(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);

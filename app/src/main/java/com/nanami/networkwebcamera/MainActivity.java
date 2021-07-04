@@ -15,11 +15,13 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -52,11 +54,14 @@ public class MainActivity extends AppCompatActivity{
     private TextView connectionType;
     private TextView wifi_ssid;
 
+    private Button connectButton;
+
     private Spinner res_select;
 
     private int pic_width = 1280;
     private int pic_height = 720;
 
+    // Listener for Resolution spinner
     private AdapterView.OnItemSelectedListener res_select_listener = new AdapterView.OnItemSelectedListener() {
         @Override
         public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -92,6 +97,7 @@ public class MainActivity extends AppCompatActivity{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Prepare GUI
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ipFirst3 = findViewById(R.id.ip_addr_1);
@@ -102,6 +108,12 @@ public class MainActivity extends AppCompatActivity{
         connectionType = findViewById(R.id.textView4);
         wifi_ssid = findViewById(R.id.textView6);
         deviceIP = findViewById(R.id.textView8);
+        connectButton = findViewById(R.id.button2);
+        connectButton.setOnClickListener(v -> {
+            connectButton.setEnabled(false);
+            new Handler().postDelayed(() -> connectButton.setEnabled(true), 1000L);
+            callCameraActivity(v);
+        });
         res_select = findViewById(R.id.res_select);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.res_list, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -113,6 +125,7 @@ public class MainActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
 
+        // Permission Check
         checkPermission();
 
         // Check Network Connection
@@ -143,6 +156,7 @@ public class MainActivity extends AppCompatActivity{
         }
     }
 
+    // Called when connect button pressed
     public void callCameraActivity(View view){
         String hostIpAddr = ipFirst3.getText().toString() + "." + ipSecond3.getText().toString() + "." + ipThird3.getText().toString() + "." + ipLast3.getText().toString();
         int hostPort = Integer.parseInt(portNo.getText().toString());
